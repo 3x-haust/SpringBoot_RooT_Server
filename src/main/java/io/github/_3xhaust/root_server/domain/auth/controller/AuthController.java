@@ -18,7 +18,7 @@ import io.github._3xhaust.root_server.domain.auth.dto.req.TokenRequest;
 
 @Tag(name = "Authentication", description = "Authentication management APIs")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
