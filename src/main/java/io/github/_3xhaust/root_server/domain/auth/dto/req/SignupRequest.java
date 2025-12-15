@@ -34,4 +34,7 @@ public class SignupRequest {
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     @NotBlank(message = "이메일은 필수 값입니다.")
     private String email;
+
+    @Schema(description = "프로필 이미지 ID", example = "1", required = false)
+    private Long profileImageId;
 }

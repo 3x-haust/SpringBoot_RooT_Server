@@ -3,6 +3,8 @@ package io.github._3xhaust.root_server.domain.auth.service;
 import io.github._3xhaust.root_server.domain.auth.dto.req.LoginRequest;
 import io.github._3xhaust.root_server.domain.auth.dto.req.SignupRequest;
 import io.github._3xhaust.root_server.domain.auth.dto.res.TokenResponse;
+import io.github._3xhaust.root_server.domain.image.entity.Image;
+import io.github._3xhaust.root_server.domain.image.repository.ImageRepository;
 import io.github._3xhaust.root_server.domain.user.entity.User;
 import io.github._3xhaust.root_server.domain.user.exception.UserErrorCode;
 import io.github._3xhaust.root_server.domain.user.exception.UserException;
@@ -29,6 +31,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final ImageRepository imageRepository;
 
     @Transactional
     public TokenResponse signup(SignupRequest request) {
@@ -37,13 +40,17 @@ public class AuthService {
         }
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-
+        Image profileImage = null;
+        if (request.getProfileImageId() != null) {
+            profileImage = imageRepository.findById(request.getProfileImageId()).orElse(null);
+        }
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .name(request.getName())
                 .language(request.getLanguage())
                 .rating((short) 5)
+                .profileImage(profileImage)
                 .build();
 
         User savedUser = userRepository.save(user);

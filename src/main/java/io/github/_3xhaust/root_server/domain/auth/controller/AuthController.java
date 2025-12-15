@@ -35,9 +35,9 @@ public class AuthController {
                     content = @Content(mediaType = "application/json"))
     })
     @PostMapping("/register")
-    public ApiResponse<Void> register(@Valid @RequestBody SignupRequest request) {
-        authService.signup(request);
-        return ApiResponse.ok(null);
+    public ApiResponse<TokenResponse> register(@Valid @RequestBody SignupRequest request) {
+        TokenResponse response = authService.signup(request);
+        return ApiResponse.ok(response);
     }
 
     @Operation(summary = "Login user", description = "Authenticate user and return JWT tokens")
