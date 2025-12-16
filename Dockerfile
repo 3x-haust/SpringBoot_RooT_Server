@@ -6,7 +6,6 @@ COPY gradle gradle
 COPY settings.gradle.kts build.gradle.kts gradle.properties* ./
 
 COPY src ./src
-RUN mkdir -p uploads/images
 
 RUN chmod +x ./gradlew
 RUN ./gradlew clean bootJar --no-daemon -x test
@@ -15,6 +14,7 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 ENV JAVA_OPTS=""
 
+RUN mkdir -p /app/uploads/images
 
 COPY --from=builder /home/gradle/project/build/libs/*.jar /app/app.jar
 
