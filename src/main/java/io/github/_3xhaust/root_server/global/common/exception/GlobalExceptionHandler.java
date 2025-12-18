@@ -18,55 +18,64 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBaseException(BaseException ex) {
-        return buildErrorResponse(ex.getErrorCode(), ex.getDetailMessage());
+    public ResponseEntity<ApiResponse<?>> handleBaseException(BaseException ex) {
+        return new ResponseEntity<>(ApiResponse.error(
+                ex.getErrorCode().getHttpStatus(),
+                ex.getErrorCode().getCode(),
+                List.of(ex.getDetailMessage())
+        ), ex.getErrorCode().getHttpStatus());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("Illegal argument: {}", ex.getMessage());
-        return buildErrorResponse(CommonErrorCode.INVALID_ARGUMENT, ex.getMessage());
+        return new ResponseEntity<>(ApiResponse.error(
+                CommonErrorCode.INVALID_ARGUMENT.getHttpStatus(),
+                CommonErrorCode.INVALID_ARGUMENT.getCode(),
+                List.of(ex.getMessage())
+        ), CommonErrorCode.INVALID_ARGUMENT.getHttpStatus());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
+    public ResponseEntity<ApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
         log.warn("Bad credentials: {}", ex.getMessage());
-        return buildErrorResponse(CommonErrorCode.BAD_CREDENTIALS, null);
+        return new ResponseEntity<>(ApiResponse.error(
+                CommonErrorCode.BAD_CREDENTIALS.getHttpStatus(),
+                CommonErrorCode.BAD_CREDENTIALS.getCode(),
+                List.of("이메일 또는 비밀번호가 올바르지 않습니다.")
+        ), CommonErrorCode.BAD_CREDENTIALS.getHttpStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
-        String message = fieldErrors.stream()
-                .map(error -> error.getField() + " " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-
-        log.warn("Validation error: {}", message);
-
-        return buildErrorResponse(CommonErrorCode.VALIDATION_ERROR, message);
+    public ResponseEntity<ApiResponse<?>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        List<String> messages = ex.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .toList();
+        log.warn("Validation error: {}", messages);
+        return new ResponseEntity<>(ApiResponse.error(
+                CommonErrorCode.VALIDATION_ERROR.getHttpStatus(),
+                CommonErrorCode.VALIDATION_ERROR.getCode(),
+                messages
+        ), CommonErrorCode.VALIDATION_ERROR.getHttpStatus());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException ex) {
+    public ResponseEntity<ApiResponse<?>> handleNoResourceFound(NoResourceFoundException ex) {
         log.info("Static resource not found: {}", ex.getMessage());
-        return buildErrorResponse(CommonErrorCode.NOT_FOUND, null);
+        return new ResponseEntity<>(ApiResponse.error(
+                CommonErrorCode.NOT_FOUND.getHttpStatus(),
+                CommonErrorCode.NOT_FOUND.getCode(),
+                List.of("요청하신 리소스를 찾을 수 없습니다.")
+        ), CommonErrorCode.NOT_FOUND.getHttpStatus());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
+    public ResponseEntity<ApiResponse<?>> handleException(Exception ex) {
         log.error("Unhandled exception", ex);
-
-        return buildErrorResponse(CommonErrorCode.INTERNAL_SERVER_ERROR, null);
-    }
-
-    private ResponseEntity<ApiResponse<Void>> buildErrorResponse(ErrorCode errorCode, String detail) {
-        HttpStatus status = errorCode.getHttpStatus();
-        if (detail != null) {
-            log.warn("Handled exception: code={}, detail={}", errorCode.getCode(), detail);
-        } else {
-            log.warn("Handled exception: code={}", errorCode.getCode());
-        }
-        ApiResponse<Void> response = ApiResponse.error(errorCode.getMessage(), errorCode.getCode());
-        return new ResponseEntity<>(response, status);
+        return new ResponseEntity<>(ApiResponse.error(
+                CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus(),
+                CommonErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+                List.of("서버 내부 오류가 발생했습니다.")
+        ), CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus());
     }
 }
