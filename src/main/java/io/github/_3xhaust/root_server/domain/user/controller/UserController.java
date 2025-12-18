@@ -51,28 +51,34 @@ public class UserController {
         return ApiResponse.ok(userDTO);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/me")
     public ApiResponse<UserResponseDTO> updateUser(
-            @PathVariable Long id,
+            Authentication authentication,
             @RequestBody @Valid UpdateUserRequestDTO updateUserRequestDTO
     ) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Long id = userService.getUserByEmail(userDetails.getUsername()).getId();
         UserDTO user = userService.updateUser(id, updateUserRequestDTO);
         UserResponseDTO userDTO = UserResponseDTO.of(user);
         return ApiResponse.ok(userDTO);
     }
 
-    @PatchMapping("/{id}/password")
+    @PatchMapping("/me/password")
     public ApiResponse<Void> changePassword(
-            @PathVariable Long id,
+            Authentication authentication,
             @RequestBody @Valid ChangePasswordRequestDTO changePasswordRequestDTO
     ) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Long id = userService.getUserByEmail(userDetails.getUsername()).getId();
         userService.changePassword(id, changePasswordRequestDTO);
-        return ApiResponse.ok(null, "Password changed successfully");
+        return ApiResponse.ok((Void) null, "Password changed successfully");
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteUser(@PathVariable Long id) {
+    @DeleteMapping("/me")
+    public ApiResponse<Void> deleteUser(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Long id = userService.getUserByEmail(userDetails.getUsername()).getId();
         userService.deleteUser(id);
-        return ApiResponse.ok(null, "User deleted successfully");
+        return ApiResponse.ok((Void) null, "User deleted successfully");
     }
 }

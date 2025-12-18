@@ -42,7 +42,8 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         Image profileImage = null;
         if (request.getProfileImageId() != null) {
-            profileImage = imageRepository.findById(request.getProfileImageId()).orElse(null);
+            profileImage = imageRepository.findById(request.getProfileImageId())
+                    .orElseThrow(() -> new UserException(UserErrorCode.INVALID_USER_INPUT, "Profile image not found: id=" + request.getProfileImageId()));
         }
         User user = User.builder()
                 .email(request.getEmail())

@@ -66,7 +66,7 @@ public class GarageSaleController {
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         garageSaleService.toggleFavoriteGarageSale(userDetails.getUsername(), id);
-        return ApiResponse.ok(null, "즐겨찾기가 변경되었습니다.");
+        return ApiResponse.ok((Void) null, "즐겨찾기가 변경되었습니다.");
     }
 
     @GetMapping("/{id}/{productId}")
@@ -86,7 +86,7 @@ public class GarageSaleController {
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         garageSaleService.toggleFavoriteGarageSaleProduct(userDetails.getUsername(), id, productId);
-        return ApiResponse.ok(null, "관심 상품이 변경되었습니다.");
+        return ApiResponse.ok((Void) null, "관심 상품이 변경되었습니다.");
     }
 }
 

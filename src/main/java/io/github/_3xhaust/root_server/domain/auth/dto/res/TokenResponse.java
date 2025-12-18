@@ -20,6 +20,7 @@ public class TokenResponse {
     private String refreshToken;
 
     @Schema(description = "Token type", example = "Bearer")
+    @Builder.Default
     private String tokenType = "Bearer";
 
     public TokenResponse(String accessToken, String refreshToken) {

@@ -66,7 +66,7 @@ public class ProductController {
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         productService.deleteProduct(userDetails.getUsername(), productId);
-        return ApiResponse.ok(null, "상품이 삭제되었습니다.");
+        return ApiResponse.ok((Void) null, "상품이 삭제되었습니다.");
     }
 
     @PostMapping("/{productId}/favorite")
@@ -76,7 +76,7 @@ public class ProductController {
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         productService.toggleFavorite(userDetails.getUsername(), productId);
-        return ApiResponse.ok(null, "관심 상품이 변경되었습니다.");
+        return ApiResponse.ok((Void) null, "관심 상품이 변경되었습니다.");
     }
 
     @GetMapping("/search")
@@ -101,7 +101,7 @@ public class ProductController {
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         productService.uploadProductImages(userDetails.getUsername(), productId, imageIds);
-        return ApiResponse.ok(null, "이미지가 업로드되었습니다.");
+        return ApiResponse.ok((Void) null, "이미지가 업로드되었습니다.");
     }
 
     @DeleteMapping("/{productId}/images/{imageId}")
@@ -112,6 +112,6 @@ public class ProductController {
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         productService.deleteProductImage(userDetails.getUsername(), productId, imageId);
-        return ApiResponse.ok(null, "이미지가 삭제되었습니다.");
+        return ApiResponse.ok((Void) null, "이미지가 삭제되었습니다.");
     }
 }

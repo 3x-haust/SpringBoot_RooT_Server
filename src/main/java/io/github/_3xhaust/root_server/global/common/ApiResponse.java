@@ -47,6 +47,23 @@ public class ApiResponse<T> {
                 .build();
     }
 
+    public static <T> ApiResponse<T> ok(HttpStatus status, T data) {
+        return ApiResponse.<T>builder()
+                .statusCode(status.value())
+                .message(List.of("요청이 성공적으로 처리되었습니다."))
+                .data(data)
+                .build();
+
+    }
+
+    public static <T> ApiResponse<T> ok(HttpStatus status, T data, String message) {
+        return ApiResponse.<T>builder()
+                .statusCode(status.value())
+                .message(List.of(message))
+                .data(data)
+                .build();
+    }
+
     public static <T> ApiResponse<T> error(HttpStatus httpStatus, String errorCode, List<String> messages) {
         return ApiResponse.<T>builder()
                 .statusCode(httpStatus.value())
