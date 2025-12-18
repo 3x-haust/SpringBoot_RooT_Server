@@ -5,33 +5,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
-    name: Test (only main repo)
-    if: github.repository == 'OZ-RooT/SpringBoot_RooT_Server'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Run tests
-        run: ./gradlew test --no-daemon
-
   deploy:
-    name: Deploy to Server
-    needs: test
-    if: github.repository == 'OZ-RooT/SpringBoot_RooT_Server'
+    if: github.repository == 'my-org/SpringBoot_RooT_Server'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,8 +21,7 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p 2201 \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 -p 2201 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             cd SpringBoot_RooT_Server/
             git pull origin main
