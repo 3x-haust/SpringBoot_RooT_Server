@@ -20,11 +20,11 @@ public class HistoryService {
     private final SearchHistoryRepository searchHistoryRepository;
     private final UserRepository userRepository;
 
-    public void recordView(String email, Long garageSaleId, Long productId) {
-        if (email == null) return;
+    public void recordView(String name, Long garageSaleId, Long productId) {
+        if (name == null) return;
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         ViewHistory viewHistory = ViewHistory.builder()
                 .user(user)
@@ -35,11 +35,11 @@ public class HistoryService {
         viewHistoryRepository.save(viewHistory);
     }
 
-    public void recordSearch(String email, String keyword, Long garageSaleId, Long productId) {
-        if (email == null || keyword == null || keyword.isBlank()) return;
+    public void recordSearch(String name, String keyword, Long garageSaleId, Long productId) {
+        if (name == null || keyword == null || keyword.isBlank()) return;
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         SearchHistory searchHistory = SearchHistory.builder()
                 .user(user)

@@ -23,6 +23,7 @@ public class ProductResponse {
     private Short type;
     private Long garageSaleId;
     private List<String> imageUrls;
+    private Boolean isFavorite;
     private Instant createdAt;
 
     @Getter
@@ -37,6 +38,10 @@ public class ProductResponse {
     }
 
     public static ProductResponse of(Product product) {
+        return of(product, null);
+    }
+
+    public static ProductResponse of(Product product, Boolean isFavorite) {
         return ProductResponse.builder()
                 .id(product.getId())
                 .seller(SellerInfo.builder()
@@ -55,6 +60,7 @@ public class ProductResponse {
                 .imageUrls(product.getProductImages().stream()
                         .map(pi -> pi.getImage().getUrl())
                         .toList())
+                .isFavorite(isFavorite)
                 .createdAt(product.getCreatedAt())
                 .build();
     }

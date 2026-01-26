@@ -49,7 +49,7 @@ public class ProductService {
 
     private static final short TYPE_USED = 0;
 
-    public Page<ProductListResponse> getProducts(Short type, int page, int limit) {
+    public Page<ProductListResponse> getProducts(Short type, int page, int limit, Long userId) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Product> products;
@@ -59,19 +59,23 @@ public class ProductService {
             products = productRepository.findAll(pageable);
         }
 
-        return products.map(ProductListResponse::of);
+        return products.map(product -> {
+            Boolean isFavorite = userId != null && favoriteUsedItemRepository.existsByUserIdAndProductId(userId, product.getId());
+            return ProductListResponse.of(product, isFavorite);
+        });
     }
 
-    public ProductResponse getProductById(Long productId) {
+    public ProductResponse getProductById(Long productId, Long userId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
-        return ProductResponse.of(product);
+        Boolean isFavorite = userId != null && favoriteUsedItemRepository.existsByUserIdAndProductId(userId, productId);
+        return ProductResponse.of(product, isFavorite);
     }
 
     @Transactional
-    public ProductResponse createProduct(String email, CreateProductRequest request) {
-        User seller = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public ProductResponse createProduct(String name, CreateProductRequest request) {
+        User seller = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         GarageSale garageSale = null;
         if (request.getGarageSaleId() != null) {
@@ -107,13 +111,14 @@ public class ProductService {
             }
         }
 
-        return ProductResponse.of(savedProduct);
+        Boolean isFavorite = favoriteUsedItemRepository.existsByUserIdAndProductId(seller.getId(), savedProduct.getId());
+        return ProductResponse.of(savedProduct, isFavorite);
     }
 
     @Transactional
-    public ProductResponse updateProduct(String email, Long productId, UpdateProductRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public ProductResponse updateProduct(String name, Long productId, UpdateProductRequest request) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
@@ -147,13 +152,14 @@ public class ProductService {
             }
         }
 
-        return ProductResponse.of(product);
+        Boolean isFavorite = favoriteUsedItemRepository.existsByUserIdAndProductId(user.getId(), product.getId());
+        return ProductResponse.of(product, isFavorite);
     }
 
     @Transactional
-    public void deleteProduct(String email, Long productId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public void deleteProduct(String name, Long productId) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
@@ -166,9 +172,9 @@ public class ProductService {
     }
 
     @Transactional
-    public void toggleFavorite(String email, Long productId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public void toggleFavorite(String name, Long productId) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
@@ -184,9 +190,9 @@ public class ProductService {
         }
     }
 
-    public List<ProductListResponse> getFavoriteProducts(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public List<ProductListResponse> getFavoriteProducts(String name) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         List<Product> products = favoriteUsedItemRepository.findProductsByUserId(user.getId());
         return products.stream()
@@ -194,16 +200,19 @@ public class ProductService {
                 .toList();
     }
 
-    public Page<ProductListResponse> searchProducts(String title, Double minPrice, Double maxPrice, int page, int limit, String sortBy, String direction) {
+    public Page<ProductListResponse> searchProducts(String title, Double minPrice, Double maxPrice, int page, int limit, String sortBy, String direction, Long userId) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.fromString(direction), sortBy));
         Page<Product> products = productRepository.searchProducts(title, minPrice, maxPrice, pageable);
-        return products.map(ProductListResponse::of);
+        return products.map(product -> {
+            Boolean isFavorite = userId != null && favoriteUsedItemRepository.existsByUserIdAndProductId(userId, product.getId());
+            return ProductListResponse.of(product, isFavorite);
+        });
     }
 
     @Transactional
-    public void uploadProductImages(String email, Long productId, List<Long> imageIds) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public void uploadProductImages(String name, Long productId, List<Long> imageIds) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
@@ -225,9 +234,9 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProductImage(String email, Long productId, Long imageId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public void deleteProductImage(String name, Long productId, Long imageId) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
@@ -244,16 +253,16 @@ public class ProductService {
         product.removeImage(productImage);
     }
 
-    public Page<ProductListResponse> getUsedProductsFromElasticsearch(int page, int limit, String sortBy, String sortDir) {
+    public Page<ProductListResponse> getUsedProductsFromElasticsearch(int page, int limit, String sortBy, String sortDir, Long userId) {
         Sort sort = createSort(sortBy, sortDir);
         Pageable pageable = PageRequest.of(page - 1, limit, sort);
 
         return productSearchRepository.findByTypeAndIsActiveTrue(TYPE_USED, pageable)
-                .map(this::convertToProductListResponse);
+                .map(doc -> convertToProductListResponse(doc, userId));
     }
 
     public Page<ProductListResponse> searchUsedProductsFromElasticsearch(String keyword, int page, int limit,
-                                                                          Integer minPrice, Integer maxPrice) {
+                                                                          Integer minPrice, Integer maxPrice, Long userId) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<ProductDocument> result;
@@ -265,22 +274,22 @@ public class ProductService {
             result = productSearchRepository.findByTypeAndIsActiveTrue(TYPE_USED, pageable);
         }
 
-        return result.map(this::convertToProductListResponse);
+        return result.map(doc -> convertToProductListResponse(doc, userId));
     }
 
-    public Page<ProductListResponse> getProductsByTagFromElasticsearch(String tag, int page, int limit) {
+    public Page<ProductListResponse> getProductsByTagFromElasticsearch(String tag, int page, int limit, Long userId) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
         return productSearchRepository.findByTagsContainingAndIsActiveTrue(tag, pageable)
-                .map(this::convertToProductListResponse);
+                .map(doc -> convertToProductListResponse(doc, userId));
     }
 
-    public Page<ProductListResponse> getProductsByTagsFromElasticsearch(List<String> tags, int page, int limit) {
+    public Page<ProductListResponse> getProductsByTagsFromElasticsearch(List<String> tags, int page, int limit, Long userId) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
         return productSearchRepository.findByTagsInAndIsActiveTrue(tags, pageable)
-                .map(this::convertToProductListResponse);
+                .map(doc -> convertToProductListResponse(doc, userId));
     }
 
-    public Page<ProductListResponse> getSimilarProducts(Long productId, int page, int limit) {
+    public Page<ProductListResponse> getSimilarProducts(Long productId, int page, int limit, Long userId) {
         ProductDocument productDoc = productSearchRepository.findById(ProductDocument.generateId(productId))
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND, "id=" + productId));
 
@@ -316,12 +325,18 @@ public class ProductService {
                 pageable
         );
 
-        return similarProducts.map(this::convertToProductListResponse);
+        return similarProducts.map(doc -> convertToProductListResponse(doc, userId));
     }
 
     private ProductListResponse convertToProductListResponse(ProductDocument document) {
+        return convertToProductListResponse(document, null);
+    }
+
+    private ProductListResponse convertToProductListResponse(ProductDocument document, Long userId) {
         String thumbnailUrl = document.getImageUrls() != null && !document.getImageUrls().isEmpty()
                 ? document.getImageUrls().get(0) : null;
+
+        Boolean isFavorite = userId != null && favoriteUsedItemRepository.existsByUserIdAndProductId(userId, document.getProductId());
 
         return ProductListResponse.builder()
                 .id(document.getProductId())
@@ -335,6 +350,7 @@ public class ProductService {
                         .id(document.getSellerId())
                         .name(document.getSellerName())
                         .build())
+                .isFavorite(isFavorite)
                 .build();
     }
 

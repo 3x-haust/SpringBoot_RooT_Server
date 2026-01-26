@@ -6,6 +6,7 @@ import io.github._3xhaust.root_server.domain.product.dto.req.UpdateProductReques
 import io.github._3xhaust.root_server.domain.product.dto.res.ProductListResponse;
 import io.github._3xhaust.root_server.domain.product.dto.res.ProductResponse;
 import io.github._3xhaust.root_server.domain.product.service.ProductService;
+import io.github._3xhaust.root_server.domain.user.service.UserService;
 import io.github._3xhaust.root_server.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,14 +31,19 @@ public class ProductController {
 
     private final ProductService productService;
     private final HistoryService historyService;
+    private final UserService userService;
 
     @GetMapping
     public ApiResponse<Page<ProductListResponse>> getProducts(
+            Authentication authentication,
             @RequestParam(required = false) Short type,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit
     ) {
-        Page<ProductListResponse> products = productService.getProducts(type, page, limit);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> products = productService.getProducts(type, page, limit, userId);
         return ApiResponse.ok(products);
     }
 
@@ -46,11 +52,14 @@ public class ProductController {
             Authentication authentication,
             @PathVariable Long productId
     ) {
-        String userEmail = authentication != null
+        String userName = authentication != null
                 ? ((UserDetails) authentication.getPrincipal()).getUsername()
                 : null;
-        historyService.recordView(userEmail, null, productId);
-        ProductResponse product = productService.getProductById(productId);
+        historyService.recordView(userName, null, productId);
+        Long userId = userName != null
+                ? userService.getUserByName(userName).getId()
+                : null;
+        ProductResponse product = productService.getProductById(productId, userId);
         return ApiResponse.ok(product);
     }
 
@@ -71,11 +80,15 @@ public class ProductController {
     })
     @GetMapping("/{productId}/similar")
     public ApiResponse<Page<ProductListResponse>> getSimilarProducts(
+            Authentication authentication,
             @Parameter(description = "Product ID to find similar items for", example = "1", required = true) @PathVariable Long productId,
             @Parameter(description = "Page number (1-indexed)", example = "1") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "Number of items per page", example = "12") @RequestParam(defaultValue = "12") int limit
     ) {
-        Page<ProductListResponse> similarProducts = productService.getSimilarProducts(productId, page, limit);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> similarProducts = productService.getSimilarProducts(productId, page, limit, userId);
         return ApiResponse.ok(similarProducts);
     }
 
@@ -122,6 +135,7 @@ public class ProductController {
 
     @GetMapping("/search")
     public ApiResponse<Page<ProductListResponse>> searchProducts(
+            Authentication authentication,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
@@ -130,7 +144,10 @@ public class ProductController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction
     ) {
-        Page<ProductListResponse> products = productService.searchProducts(title, minPrice, maxPrice, page, limit, sortBy, direction);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> products = productService.searchProducts(title, minPrice, maxPrice, page, limit, sortBy, direction, userId);
         return ApiResponse.ok(products);
     }
 
@@ -159,44 +176,60 @@ public class ProductController {
     // Elasticsearch 기반 검색 엔드포인트
     @GetMapping("/used/search")
     public ApiResponse<Page<ProductListResponse>> searchUsedProducts(
+            Authentication authentication,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit,
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice
     ) {
-        Page<ProductListResponse> products = productService.searchUsedProductsFromElasticsearch(keyword, page, limit, minPrice, maxPrice);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> products = productService.searchUsedProductsFromElasticsearch(keyword, page, limit, minPrice, maxPrice, userId);
         return ApiResponse.ok(products);
     }
 
     @GetMapping("/used")
     public ApiResponse<Page<ProductListResponse>> getUsedProducts(
+            Authentication authentication,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir
     ) {
-        Page<ProductListResponse> products = productService.getUsedProductsFromElasticsearch(page, limit, sortBy, sortDir);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> products = productService.getUsedProductsFromElasticsearch(page, limit, sortBy, sortDir, userId);
         return ApiResponse.ok(products);
     }
 
     @GetMapping("/tags")
     public ApiResponse<Page<ProductListResponse>> getProductsByTag(
+            Authentication authentication,
             @RequestParam String tag,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit
     ) {
-        Page<ProductListResponse> products = productService.getProductsByTagFromElasticsearch(tag, page, limit);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> products = productService.getProductsByTagFromElasticsearch(tag, page, limit, userId);
         return ApiResponse.ok(products);
     }
 
     @GetMapping("/tags/multiple")
     public ApiResponse<Page<ProductListResponse>> getProductsByTags(
+            Authentication authentication,
             @RequestParam List<String> tags,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit
     ) {
-        Page<ProductListResponse> products = productService.getProductsByTagsFromElasticsearch(tags, page, limit);
+        Long userId = authentication != null
+                ? userService.getUserByName(((UserDetails) authentication.getPrincipal()).getUsername()).getId()
+                : null;
+        Page<ProductListResponse> products = productService.getProductsByTagsFromElasticsearch(tags, page, limit, userId);
         return ApiResponse.ok(products);
     }
 }

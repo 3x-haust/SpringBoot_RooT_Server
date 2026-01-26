@@ -259,7 +259,7 @@ public class RecommendationService {
         if (userEmail == null) {
             return null;
         }
-        return userRepository.findByEmail(userEmail)
+        return userRepository.findByName(userEmail)
                 .map(user -> user.getId())
                 .orElse(null);
     }

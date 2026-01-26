@@ -72,9 +72,9 @@ public class GarageSaleService {
     }
 
     @Transactional
-    public GarageSaleResponse createGarageSale(String email, CreateGarageSaleRequest request) {
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public GarageSaleResponse createGarageSale(String name, CreateGarageSaleRequest request) {
+        User owner = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         GarageSale garageSale = GarageSale.builder()
                 .owner(owner)
@@ -90,9 +90,9 @@ public class GarageSaleService {
     }
 
     @Transactional
-    public GarageSaleResponse updateGarageSale(String email, Long id, UpdateGarageSaleRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public GarageSaleResponse updateGarageSale(String name, Long id, UpdateGarageSaleRequest request) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         GarageSale garageSale = garageSaleRepository.findById(id)
                 .orElseThrow(() -> new GarageSaleException(GarageSaleErrorCode.GARAGE_SALE_NOT_FOUND, "id=" + id));
@@ -113,9 +113,9 @@ public class GarageSaleService {
     }
 
     @Transactional
-    public void toggleFavoriteGarageSale(String email, Long garageSaleId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public void toggleFavoriteGarageSale(String name, Long garageSaleId) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         GarageSale garageSale = garageSaleRepository.findById(garageSaleId)
                 .orElseThrow(() -> new GarageSaleException(GarageSaleErrorCode.GARAGE_SALE_NOT_FOUND, "id=" + garageSaleId));
@@ -147,9 +147,9 @@ public class GarageSaleService {
     }
 
     @Transactional
-    public void toggleFavoriteGarageSaleProduct(String email, Long garageSaleId, Long productId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public void toggleFavoriteGarageSaleProduct(String name, Long garageSaleId, Long productId) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         GarageSale garageSale = garageSaleRepository.findById(garageSaleId)
                 .orElseThrow(() -> new GarageSaleException(GarageSaleErrorCode.GARAGE_SALE_NOT_FOUND, "id=" + garageSaleId));
@@ -173,9 +173,9 @@ public class GarageSaleService {
         }
     }
 
-    public List<GarageSaleListResponse> getFavoriteGarageSales(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public List<GarageSaleListResponse> getFavoriteGarageSales(String name) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         List<GarageSale> garageSales = favoriteGarageSaleRepository.findGarageSalesByUserId(user.getId());
         return garageSales.stream()

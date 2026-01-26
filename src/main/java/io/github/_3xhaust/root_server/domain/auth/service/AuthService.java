@@ -39,6 +39,10 @@ public class AuthService {
             throw new UserException(UserErrorCode.EMAIL_DUPLICATED, "email=" + request.getEmail());
         }
 
+        if (userRepository.existsByName(request.getName())) {
+            throw new UserException(UserErrorCode.NAME_DUPLICATED, "name=" + request.getName());
+        }
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         Image profileImage = null;
         if (request.getProfileImageId() != null) {
@@ -56,8 +60,8 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        String accessToken = jwtTokenProvider.generateAccessToken(savedUser.getEmail());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser.getEmail());
+        String accessToken = jwtTokenProvider.generateAccessToken(savedUser.getName());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser.getName());
 
         Duration expiration = Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiry().toEpochMilli() - System.currentTimeMillis());
         refreshTokenService.saveRefreshToken(savedUser.getId(), refreshToken, expiration);
@@ -69,16 +73,16 @@ public class AuthService {
     public TokenResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
+                        request.getName(),
                         request.getPassword()
                 )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + request.getEmail()));
+        User user = userRepository.findByName(request.getName())
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + request.getName()));
 
         String accessToken = jwtTokenProvider.generateAccessToken(authentication);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getName());
 
         Duration expiration = Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiry().toEpochMilli() - System.currentTimeMillis());
         refreshTokenService.saveRefreshToken(user.getId(), refreshToken, expiration);
@@ -92,9 +96,9 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid refresh token");
         }
 
-        String email = jwtTokenProvider.getEmailFromToken(refreshToken);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+        String name = jwtTokenProvider.getNameFromToken(refreshToken);
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         Long userId = user.getId();
 
@@ -102,8 +106,8 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid refresh token");
         }
 
-        String newAccessToken = jwtTokenProvider.generateAccessToken(email);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken(email);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(name);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(name);
 
         Duration expiration = Duration.ofMillis(jwtTokenProvider.getRefreshTokenExpiry().toEpochMilli() - System.currentTimeMillis());
         refreshTokenService.saveRefreshToken(userId, newRefreshToken, expiration);

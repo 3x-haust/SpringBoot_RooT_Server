@@ -36,31 +36,31 @@ public class JwtTokenProvider {
         return generateAccessToken(userDetails.getUsername());
     }
 
-    public String generateAccessToken(String email) {
+    public String generateAccessToken(String name) {
         Instant now = Instant.now();
         Instant expiryDate = now.plusMillis(accessTokenExpiration);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(name)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiryDate))
                 .signWith(secretKey, Jwts.SIG.HS512)
                 .compact();
     }
 
-    public String generateRefreshToken(String email) {
+    public String generateRefreshToken(String name) {
         Instant now = Instant.now();
         Instant expiryDate = now.plusMillis(refreshTokenExpiration);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(name)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiryDate))
                 .signWith(secretKey, Jwts.SIG.HS512)
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
+    public String getNameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
@@ -68,6 +68,11 @@ public class JwtTokenProvider {
                 .getPayload();
 
         return claims.getSubject();
+    }
+
+    @Deprecated
+    public String getEmailFromToken(String token) {
+        return getNameFromToken(token);
     }
 
     public boolean validateToken(String token) {

@@ -1,7 +1,5 @@
 package io.github._3xhaust.root_server.domain.user.controller;
 
-import io.github._3xhaust.root_server.domain.product.dto.res.ProductListResponse;
-import io.github._3xhaust.root_server.domain.garagesale.dto.res.GarageSaleListResponse;
 import io.github._3xhaust.root_server.domain.user.dto.UserDTO;
 import io.github._3xhaust.root_server.domain.user.dto.req.ChangePasswordRequestDTO;
 import io.github._3xhaust.root_server.domain.user.dto.req.UpdateUserRequestDTO;
@@ -32,7 +30,7 @@ public class UserController {
     @GetMapping("/me")
     public ApiResponse<UserResponseDTO> getCurrentUser(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        UserDTO user = userService.getUserByEmail(userDetails.getUsername());
+        UserDTO user = userService.getUserByName(userDetails.getUsername());
         UserResponseDTO userDTO = UserResponseDTO.of(user);
         return ApiResponse.ok(userDTO);
     }
@@ -57,7 +55,7 @@ public class UserController {
             @RequestBody @Valid UpdateUserRequestDTO updateUserRequestDTO
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Long id = userService.getUserByEmail(userDetails.getUsername()).getId();
+        Long id = userService.getUserByName(userDetails.getUsername()).getId();
         UserDTO user = userService.updateUser(id, updateUserRequestDTO);
         UserResponseDTO userDTO = UserResponseDTO.of(user);
         return ApiResponse.ok(userDTO);
@@ -69,7 +67,7 @@ public class UserController {
             @RequestBody @Valid ChangePasswordRequestDTO changePasswordRequestDTO
     ) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Long id = userService.getUserByEmail(userDetails.getUsername()).getId();
+        Long id = userService.getUserByName(userDetails.getUsername()).getId();
         userService.changePassword(id, changePasswordRequestDTO);
         return ApiResponse.ok((Void) null, "Password changed successfully");
     }
@@ -77,8 +75,14 @@ public class UserController {
     @DeleteMapping("/me")
     public ApiResponse<Void> deleteUser(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Long id = userService.getUserByEmail(userDetails.getUsername()).getId();
+        Long id = userService.getUserByName(userDetails.getUsername()).getId();
         userService.deleteUser(id);
         return ApiResponse.ok((Void) null, "User deleted successfully");
+    }
+
+    @GetMapping("/check-name")
+    public ApiResponse<Boolean> checkNameAvailability(@RequestParam String name) {
+        boolean isAvailable = userService.checkNameAvailability(name);
+        return ApiResponse.ok(isAvailable);
     }
 }

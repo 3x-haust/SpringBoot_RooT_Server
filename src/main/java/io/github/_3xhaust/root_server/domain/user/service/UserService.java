@@ -51,6 +51,14 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public UserDTO getUserByName(String name) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
+
+        return toDTO(user);
+    }
+
+    @Transactional(readOnly = true)
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "id=" + id));
@@ -59,9 +67,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public FavoritesResponse getFavorites(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "email=" + email));
+    public FavoritesResponse getFavorites(String name) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "name=" + name));
 
         List<Product> favoriteProducts = favoriteUsedItemRepository.findProductsByUserId(user.getId());
         List<GarageSale> favoriteGarageSales = favoriteGarageSaleRepository.findGarageSalesByUserId(user.getId());
@@ -80,6 +88,12 @@ public class UserService {
     public UserDTO updateUser(Long id, UpdateUserRequestDTO requestDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "id=" + id));
+
+        if (requestDTO.getName() != null && !requestDTO.getName().equals(user.getName())) {
+            if (userRepository.existsByName(requestDTO.getName())) {
+                throw new UserException(UserErrorCode.NAME_DUPLICATED, "name=" + requestDTO.getName());
+            }
+        }
 
         Image profileImage = null;
         if (requestDTO.getProfileImageId() != null) {
@@ -114,6 +128,11 @@ public class UserService {
             throw new UserException(UserErrorCode.USER_NOT_FOUND, "id=" + id);
         }
         userRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkNameAvailability(String name) {
+        return !userRepository.existsByName(name);
     }
 
     private UserDTO toDTO(User user) {
