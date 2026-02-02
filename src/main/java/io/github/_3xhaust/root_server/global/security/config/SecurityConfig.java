@@ -76,7 +76,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers( "/","/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/chat-test.html", "/chat-test.html/**").permitAll()
+                        .requestMatchers("/chat-test.html").permitAll()
+                        .requestMatchers("/static/**", "/*.html", "/*.css", "/*.js", "/*.png", "/*.jpg", "/*.jpeg", "/*.gif", "/*.svg", "/*.ico").permitAll()
+                        .requestMatchers("/ws/chat/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/error").permitAll()
