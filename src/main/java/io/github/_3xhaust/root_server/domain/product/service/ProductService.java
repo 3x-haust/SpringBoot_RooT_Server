@@ -101,6 +101,7 @@ public class ProductService {
                 .seller(seller)
                 .title(request.getTitle())
                 .price(request.getPrice())
+                .sale(request.getSale())
                 .description(request.getDescription())
                 .body(request.getBody())
                 .type(request.getType())
@@ -145,6 +146,7 @@ public class ProductService {
         product.update(
                 request.getTitle() != null ? request.getTitle() : product.getTitle(),
                 request.getPrice() != null ? request.getPrice() : product.getPrice(),
+                request.getSale() != null ? request.getSale() : product.getSale(),
                 request.getDescription() != null ? request.getDescription() : product.getDescription(),
                 request.getBody() != null ? request.getBody() : product.getBody(),
                 request.getLatitude() != null ? request.getLatitude() : product.getLatitude(),
@@ -364,6 +366,7 @@ public class ProductService {
                 .id(document.getProductId())
                 .title(document.getTitle())
                 .price(document.getPrice())
+                .sale(document.getSale())
                 .description(document.getDescription())
                 .type(document.getType())
                 .thumbnailUrl(thumbnailUrl)

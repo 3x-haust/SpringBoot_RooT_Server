@@ -23,6 +23,9 @@ public class CreateProductRequest {
     @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
     private Double price;
 
+    @Min(value = 0, message = "할인 가격은 0 이상이어야 합니다.")
+    private Double sale;
+
     private String description;
 
     private String body;

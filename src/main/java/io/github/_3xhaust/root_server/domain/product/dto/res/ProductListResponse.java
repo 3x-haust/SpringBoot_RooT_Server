@@ -16,6 +16,7 @@ public class ProductListResponse {
     private Long id;
     private String title;
     private Double price;
+    private Double sale;
     private String description;
     private Short type;
     private String thumbnailUrl;
@@ -46,6 +47,7 @@ public class ProductListResponse {
                 .id(product.getId())
                 .title(product.getTitle())
                 .price(product.getPrice())
+                .sale(product.getSale())
                 .description(product.getDescription())
                 .type(product.getType())
                 .thumbnailUrl(thumbnailUrl)

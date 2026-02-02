@@ -18,6 +18,7 @@ public class ProductResponse {
     private SellerInfo seller;
     private String title;
     private Double price;
+    private Double sale;
     private String description;
     private String body;
     private Short type;
@@ -53,6 +54,7 @@ public class ProductResponse {
                         .build())
                 .title(product.getTitle())
                 .price(product.getPrice())
+                .sale(product.getSale())
                 .description(product.getDescription())
                 .body(product.getBody())
                 .type(product.getType())

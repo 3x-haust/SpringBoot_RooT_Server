@@ -32,6 +32,9 @@ public class Product {
     @Column(nullable = false)
     private Double price;
 
+    @Column
+    private Double sale;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -59,10 +62,11 @@ public class Product {
     private Instant createdAt;
 
     @Builder
-    public Product(User seller, String title, Double price, String description, String body, Short type, GarageSale garageSale, Double latitude, Double longitude) {
+    public Product(User seller, String title, Double price, Double sale, String description, String body, Short type, GarageSale garageSale, Double latitude, Double longitude) {
         this.seller = seller;
         this.title = title;
         this.price = price;
+        this.sale = sale;
         this.description = description;
         this.body = body;
         this.type = type;
@@ -76,9 +80,10 @@ public class Product {
         this.createdAt = Instant.now();
     }
 
-    public void update(String title, Double price, String description, String body, Double latitude, Double longitude) {
+    public void update(String title, Double price, Double sale, String description, String body, Double latitude, Double longitude) {
         this.title = title;
         this.price = price;
+        this.sale = sale;
         this.description = description;
         this.body = body;
         this.latitude = latitude;

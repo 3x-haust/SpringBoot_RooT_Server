@@ -39,6 +39,9 @@ public class ProductDocument {
     @Field(type = FieldType.Integer)
     private Double price;
 
+    @Field(type = FieldType.Integer)
+    private Double sale;
+
     @Field(type = FieldType.Text, analyzer = "korean")
     private String description;
 
