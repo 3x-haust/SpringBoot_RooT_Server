@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Document(indexName = "garage_sales")
@@ -44,6 +45,12 @@ public class GarageSaleDocument {
 
     @GeoPointField
     private GeoPoint location;
+
+    @Field(type = FieldType.Date)
+    private LocalDate startDate;
+
+    @Field(type = FieldType.Date)
+    private LocalDate endDate;
 
     @Field(type = FieldType.Date, format = DateFormat.epoch_millis)
     private Instant startTime;

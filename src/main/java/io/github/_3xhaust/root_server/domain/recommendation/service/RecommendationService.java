@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -271,8 +273,10 @@ public class RecommendationService {
                 .name(doc.getName())
                 .latitude(doc.getLatitude())
                 .longitude(doc.getLongitude())
-                .startTime(doc.getStartTime())
-                .endTime(doc.getEndTime())
+                .startDate(doc.getStartDate())
+                .endDate(doc.getEndDate())
+                .startTime(convertToLocalTime(doc.getStartTime()))
+                .endTime(convertToLocalTime(doc.getEndTime()))
                 .owner(GarageSaleListResponse.OwnerInfo.builder()
                         .id(doc.getOwnerId())
                         .name(doc.getOwnerName())
@@ -299,5 +303,12 @@ public class RecommendationService {
                         .name(doc.getSellerName())
                         .build())
                 .build();
+    }
+
+    private LocalTime convertToLocalTime(Instant instant) {
+        if (instant == null) {
+            return LocalTime.now();
+        }
+        return instant.atZone(ZoneId.systemDefault()).toLocalTime();
     }
 }
