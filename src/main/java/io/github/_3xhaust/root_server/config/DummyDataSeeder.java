@@ -72,6 +72,9 @@ public class DummyDataSeeder implements CommandLineRunner {
     @Value("${root.seed.enabled:true}")
     private boolean seedEnabled;
 
+    @Value("${root.seed.elasticsearch.enabled:false}")
+    private boolean seedElasticsearchEnabled;
+
     @Value("${image.upload.dir}")
     private String uploadDir;
 
@@ -119,6 +122,10 @@ public class DummyDataSeeder implements CommandLineRunner {
     }
 
     private void reindexSeedDocuments() {
+        if (!seedElasticsearchEnabled) {
+            return;
+        }
+
         seedProductTitles().forEach(title ->
                 productRepository.findFirstByTitle(title).ifPresent(elasticsearchIndexService::indexProduct)
         );
@@ -148,7 +155,7 @@ public class DummyDataSeeder implements CommandLineRunner {
                 product(owner, "Body lotion", 15.0, null, "Body lotion.", "Unopened body lotion with a light scent.", "assets/images/search_figma/rec_body_lotion.png", "seed_rec_body_lotion.png", List.of("Beauty", "Lotion", "Care"))
         );
 
-        products.forEach(elasticsearchIndexService::indexProduct);
+        indexProductsIfEnabled(products);
     }
 
     private void seedGarageSales(User owner) {
@@ -193,9 +200,25 @@ public class DummyDataSeeder implements CommandLineRunner {
 
         garageProducts.forEach(product -> {
             sale.getProducts().add(product);
-            elasticsearchIndexService.indexProduct(product);
         });
-        elasticsearchIndexService.indexGarageSale(sale);
+        indexProductsIfEnabled(garageProducts);
+        indexGarageSaleIfEnabled(sale);
+    }
+
+    private void indexProductsIfEnabled(List<Product> products) {
+        if (!seedElasticsearchEnabled) {
+            return;
+        }
+
+        products.forEach(elasticsearchIndexService::indexProduct);
+    }
+
+    private void indexGarageSaleIfEnabled(GarageSale garageSale) {
+        if (!seedElasticsearchEnabled) {
+            return;
+        }
+
+        elasticsearchIndexService.indexGarageSale(garageSale);
     }
 
     private void seedCommunities(User owner) {
