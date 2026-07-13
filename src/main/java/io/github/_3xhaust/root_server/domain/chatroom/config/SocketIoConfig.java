@@ -1,6 +1,8 @@
 package io.github._3xhaust.root_server.domain.chatroom.config;
 
 import com.corundumstudio.socketio.SocketIOServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SocketIoConfig {
+    private static final Logger log = LoggerFactory.getLogger(SocketIoConfig.class);
 
     @Bean
     public SocketIOServer socketIOServer(
@@ -29,13 +32,20 @@ public class SocketIoConfig {
 
             @Override
             public void start() {
-                socketIOServer.start();
-                running = true;
+                try {
+                    socketIOServer.start();
+                    running = true;
+                } catch (RuntimeException e) {
+                    running = false;
+                    log.warn("Socket.IO server failed to start; continuing without Socket.IO", e);
+                }
             }
 
             @Override
             public void stop() {
-                socketIOServer.stop();
+                if (running) {
+                    socketIOServer.stop();
+                }
                 running = false;
             }
 
