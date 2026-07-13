@@ -6,11 +6,10 @@ COPY gradle gradle
 COPY settings.gradle.kts build.gradle.kts gradle.properties* ./
 
 RUN chmod +x ./gradlew
-RUN gradle dependencies --no-daemon --console=plain
 
 COPY src ./src
 
-RUN gradle bootJar --no-daemon --console=plain --info -x test
+RUN ./gradlew bootJar --no-daemon --console=plain -x test
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
